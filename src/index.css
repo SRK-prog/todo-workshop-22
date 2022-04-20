@@ -1,0 +1,25 @@
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif, "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
+    "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+.bg-gredient {
+  background: rgb(31, 28, 28);
+  background: linear-gradient(
+    115deg,
+    rgba(31, 28, 28, 1) 24%,
+    rgba(85, 85, 85, 1) 100%
+  );
+}
+
+.add-icon {
+  margin: 0 10px 0 20px;
+}
