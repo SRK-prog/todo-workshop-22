@@ -2,10 +2,13 @@ import styled from "styled-components";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import StarIcon from "@mui/icons-material/Star";
-import { useState } from "react";
-import { connect } from "react-redux";
+import { useEffect, useState } from "react";
+import { connect, useDispatch } from "react-redux";
+import uuid from "react-uuid";
+import { MODIFY_TASK } from "./constants";
 import { addTask } from "./actions";
 import { moment } from "./moment";
+import Task from "./components/Task";
 
 const Container = styled.div`
   width: 100%;
@@ -80,44 +83,26 @@ const CancelBtn = styled.div`
 
 const TaskContainer = styled.div``;
 
-const Task = styled.div`
-  color: white;
-  padding: 20px 15px;
-  border-radius: 3px;
-  background-color: #292929;
-  margin-top: 15px;
-`;
-
-const TaskTitleWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  align-items: center;
-`;
-
-const TaskTitle = styled.div`
-  font-size: 20px;
-  font-weight: 500;
-`;
-
-const TaskStar = styled.div`
+const StarWrapper = styled.div`
+  margin: 0 10px 0 10px;
+  height: 40px;
+  width: 40px;
+  display: grid;
+  place-items: center;
   color: ${(props) => props.stared || "#545454"};
 `;
-
-const TaskTimeWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  color: #b5b5b5;
-`;
-
-const CreateTime = styled.div``;
-
-const UpdateTime = styled.div``;
 
 function App({ data, addTask }) {
   const [openField, setOpenField] = useState(false);
   const [taskInput, setTaskInput] = useState("");
+  const [items, setItems] = useState(data);
+  const [filterStared, setFilterdStared] = useState(null);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    setItems(data);
+  }, [data]);
+
   const submitHandler = (e) => {
     e.preventDefault();
     if (taskInput === "") {
@@ -126,14 +111,27 @@ function App({ data, addTask }) {
       var time = new Date();
       var newTime = moment(time);
       addTask({
+        id: uuid(),
         title: taskInput,
         star: false,
         createdAt: newTime,
         updatedAt: newTime,
       });
-      setTaskInput("")
-      setOpenField(false)
+      setTaskInput("");
+      setOpenField(false);
     }
+  };
+
+  const showStaredHandler = () => {
+    if (filterStared === false) {
+      setFilterdStared(null);
+    } else {
+      setFilterdStared(false);
+    }
+  };
+
+  const starHandler = () => {
+    dispatch({ type: MODIFY_TASK, payload: items });
   };
 
   return (
@@ -141,10 +139,18 @@ function App({ data, addTask }) {
       <SubContainer>
         <InputContainer onSubmit={submitHandler}>
           {!openField ? (
-            <AddTask onClick={() => setOpenField(true)}>
-              <AddIcon className="add-icon" />
-              Add Task
-            </AddTask>
+            <>
+              <AddTask onClick={() => setOpenField(true)}>
+                <AddIcon className="add-icon" />
+                Add Task
+              </AddTask>
+              <StarWrapper
+                stared={filterStared !== null && "#147296"}
+                onClick={showStaredHandler}
+              >
+                <StarIcon />
+              </StarWrapper>
+            </>
           ) : (
             <>
               <CancelBtn onClick={() => setOpenField(false)}>
@@ -160,20 +166,15 @@ function App({ data, addTask }) {
           )}
         </InputContainer>
         <TaskContainer>
-          {data?.slice(0).reverse().map((item, index) => (
-            <Task key={index}>
-              <TaskTitleWrapper>
-                <TaskTitle>{item?.title}</TaskTitle>
-                <TaskStar stared={item?.star && "#147296"}>
-                  <StarIcon />
-                </TaskStar>
-              </TaskTitleWrapper>
-              <TaskTimeWrapper>
-                <CreateTime>{item?.createdAt}</CreateTime>
-                <UpdateTime>{item?.updatedAt}</UpdateTime>
-              </TaskTimeWrapper>
-            </Task>
-          ))}
+          {items
+            ?.slice(0)
+            .reverse()
+            .filter((item) => item?.star !== filterStared)
+            .map((item) => (
+              <span key={item?.id}>
+                <Task item={item} starHandler={starHandler} />
+              </span>
+            ))}
         </TaskContainer>
       </SubContainer>
     </Container>
